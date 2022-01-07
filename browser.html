@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Lunar Lander AR</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                touch-action: none;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                outline: none;
+                background-color: black;
+            }
+     
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+     </style>
+
+        <script src="./js/babylon.js"></script>
+        <script src="./js/babylonjs.loaders.js"></script>
+        <script src="./js/babylonjs.materials.js"></script>
+        <script src="./js/babylon.gui.js"></script>
+        <script src="./js/cannon.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+    <script>
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        var url = "https://adobeaero.app.link/fYlRS5HDEjb";
+        function createScene() {
+            // Create a scene.
+            var scene = new BABYLON.Scene(engine);
+            
+            // Append Aero experience to scene.
+            //BABYLON.SceneLoader.ImportMesh("https://adobeaero.app.link/fYlRS5HDEjb", "", "", scene, () => { //Music
+            //BABYLON.SceneLoader.ImportMesh("https://adobeaero.app.link/hjr2kREailb", "", "", scene, () => { //Lander Prototype
+            //BABYLON.SceneLoader.ImportMesh("https://adobeaero.app.link/x9mVrUVQrlb", "", "", scene, () => { //Lander 2 (Image Anchor)
+            //BABYLON.SceneLoader.ImportMesh("https://adobeaero.app.link/VTdzjQWfslb", "", "", scene, () => { //Landin Pad 1
+            BABYLON.SceneLoader.ImportMesh(url, "", "", scene, () => { //Lunar Lander 1
+                // GUI
+                var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        
+                var input = new BABYLON.GUI.InputText();
+                input.width = "80%";
+                input.top = "10px";
+                input.left = "10px";
+                input.height = "40px";
+                input.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                input.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                input.text = url;
+                input.color = "black";
+                //input.background = "white";
+                advancedTexture.addControl(input);    
+
+                var button = BABYLON.GUI.Button.CreateSimpleButton("load button", "Load");
+                button.width = "100px";
+                button.height = "60px";
+                button.top = "10px";
+                button.paddingRight = "10px";
+                button.height = "40px";
+                button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+                input.color = "white";
+                //button.background = "white";
+                button.onPointerDownObservable.add((eventData, state) => {
+                    //alert(input.text);
+                    delete scene;
+                    url = input.text;
+                    createScene();
+                });
+
+                advancedTexture.addControl(button);   
+            
+                // Create a default arc rotate camera and light.
+                scene.createDefaultCamera(true, true, true);
+                // Register a render loop to repeatedly render the scene
+                engine.runRenderLoop(function () {
+                        scene.render();
+                });
+
+                // The default camera looks at the back of the asset.
+                // Rotate the camera by 180 degrees to the front of the asset.
+                scene.activeCamera.alpha += Math.PI;
+            }, (progressObject) => {
+                //Progress
+                if(!progressObject.lengthComputable) {
+                    console.log("Waiting...");
+                } else {
+                    var progress = Math.round(100*progressObject.loaded/progressObject.total);
+                    console.log("Progress: " + progress + " done");
+                }
+            }, (errorObject) => {
+                //Error
+                console.log("Error loading file: " + errorObject.message);
+            }, ".aero");
+
+            return scene;
+        };
+
+        const scene = createScene(); //Call the createScene function
+
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+
+   </body>
+
+</html>

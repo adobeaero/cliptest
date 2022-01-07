@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Babylon Template</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+        <script src="./js/babylon.js"></script>
+        <script src="./js/babylonjs.loaders.js"></script>
+        <script src="./js/babylonjs.materials.js"></script>
+        <script src="./js/babylon.gui.js"></script>
+        <script src="./js/cannon.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+    <script>
+
+        const bjscanvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(bjscanvas, true); // Generate the BABYLON 3D engine
+        var dcxInfo;
+        function InitializeAeroCallbacks() {
+            
+
+            dcxInfo = context.callCommand('getDCXInfo');
+            dcxInfo.get = function(key) {
+                return this[key];
+            }
+            for (var i = 0; i < dcxInfo.components.length; i++) {
+                dcxInfo[dcxInfo.components[i].componentPath.substring(1)] = 'aero://' + escape(dcxInfo.components[i].filePath);
+            }
+            
+            var url = "file://DCX";
+            function createScene() {
+                // Create a scene.
+                var bjsscene = new BABYLON.Scene(engine);
+                BABYLON.SceneLoader.ImportMesh(url, "", "", bjsscene, () => { //Lunar Lander 1
+                    
+                    // Create a default arc rotate camera and light.
+                    bjsscene.createDefaultCamera(true, true, true);
+                    // Register a render loop to repeatedly render the scene
+                    engine.runRenderLoop(function () {
+                        bjsscene.render();
+                    });
+
+                    // The default camera looks at the back of the asset.
+                    // Rotate the camera by 180 degrees to the front of the asset.
+                    bjsscene.activeCamera.alpha += Math.PI;
+                }, (progressObject) => {
+                    //Progress
+                    if(!progressObject.lengthComputable) {
+                        console.log("Waiting...");
+                    } else {
+                        var progress = Math.round(100*progressObject.loaded/progressObject.total);
+                        console.log("Progress: " + progress + " done");
+                    }
+                }, (errorObject) => {
+                    //Error
+                    console.log("Error loading file: " + errorObject.message);
+                }, ".aero");
+
+                return bjsscene;
+            };
+
+            createScene(); //Call the createScene function
+
+
+            // Watch for browser/canvas resize events
+            window.addEventListener("resize", function () {
+                    engine.resize();
+            });
+        }
+
+        
+    </script>
+
+   </body>
+
+</html>
